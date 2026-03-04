@@ -14,7 +14,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 
-# FUNCIONES DE EXTRACCIÓN (mismo código de antes)
+# FUNCIONES DE EXTRACCIÓN
 
 def extraer_celda_siguiente(tabla, label):
     for fila in tabla.rows:
@@ -375,24 +375,24 @@ def generar_pdf_bytes(comentarios):
 
 # INTERFAZ STREAMLIT
 
-st.set_page_config(page_title="Extractor de Comentarios", page_icon="💬", layout="centered")
+st.set_page_config(page_title="Extractor de Comentarios", page_icon="💬", layout="centered") #Título del aplicativo Web
 
 st.title("💬 Extractor de Comentarios")
-st.markdown("Subí uno o varios archivos Word o PDF y descargá sus comentarios en el formato que necesites.")
+st.markdown("Sube uno o varios archivos Word o PDF y descarga sus comentarios en el formato que necesites.") #Comentario inicial de explicacion del programa
 
 archivos_subidos = st.file_uploader(
-    "Seleccioná los archivos",
+    "Selecciona los archivos", #Comentario superior sobre la entrada de archivos
     type=["docx", "pdf"],
     accept_multiple_files=True
 )
 
 output_elegido = st.multiselect(
-    "¿Qué querés generar?",
+    "¿Qué deseas generar?", #Comentario inferior pre selección de objetivo
     options=["Excel", "PDF"],
     default=["Excel"]
 )
 
-if st.button("⚙️ Procesar", disabled=not archivos_subidos):
+if st.button("⚙️ Procesar", disabled=not archivos_subidos): #Ubicacion del botón de Procesamiento
     todos_los_comentarios = []
     progress = st.progress(0)
     status   = st.empty()
