@@ -1,0 +1,6 @@
+streamlit
+python-docx
+reportlab
+lxml
+openpyxl
+pymupdf
