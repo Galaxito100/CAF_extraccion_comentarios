@@ -303,9 +303,18 @@ def generar_pdf_bytes(comentarios):
         topMargin=2*cm,   bottomMargin=2*cm
     )
     styles = getSampleStyleSheet()
+
     estilo_titulo = ParagraphStyle(
         'Titulo', parent=styles['Title'],
         fontSize=16, textColor=colors.HexColor('#2C3E50'), spaceAfter=20
+    )
+    estilo_doc = ParagraphStyle(
+        'Documento', parent=styles['Heading1'],
+        fontSize=13, textColor=colors.HexColor('#FFFFFF'),
+        backColor=colors.HexColor('#2C3E50'),
+        spaceAfter=10, spaceBefore=20,
+        leftIndent=-10, rightIndent=-10,
+        borderPadding=(6, 10, 6, 10),
     )
     estilo_meta = ParagraphStyle(
         'Meta', parent=styles['Normal'],
@@ -322,15 +331,30 @@ def generar_pdf_bytes(comentarios):
         fontSize=11, textColor=colors.HexColor('#2C3E50'),
         spaceAfter=6, leading=15
     )
+
     contenido = []
     contenido.append(Paragraph("Comentarios del documento", estilo_titulo))
     contenido.append(Paragraph(f"Total de comentarios: {len(comentarios)}", styles['Normal']))
     contenido.append(Spacer(1, 0.5*cm))
-    for i, c in enumerate(comentarios, 1):
+
+    documento_actual = None
+    contador         = 1
+
+    for c in comentarios:
+        doc_nombre = c.get('documento', 'Sin nombre')
+
+        # Encabezado de documento cuando cambia
+        if doc_nombre != documento_actual:
+            documento_actual = doc_nombre
+            contenido.append(Spacer(1, 0.4*cm))
+            contenido.append(HRFlowable(width="100%", thickness=2, color=colors.HexColor('#2C3E50')))
+            contenido.append(Paragraph(f"📄 {doc_nombre}", estilo_doc))
+            contenido.append(Spacer(1, 0.2*cm))
+
         contenido.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
         contenido.append(Spacer(1, 0.2*cm))
         contenido.append(Paragraph(
-            f"<b>Comentario #{i}</b> — {c['autor']} · {c['fecha']} · {c['estado']}",
+            f"<b>Comentario #{contador}</b> — {c['autor']} · {c['fecha']} · {c['estado']}",
             estilo_meta
         ))
         contenido.append(Paragraph(
@@ -338,8 +362,12 @@ def generar_pdf_bytes(comentarios):
         ))
         contenido.append(Paragraph(c['texto'], estilo_texto))
         if c['respondido_por']:
-            contenido.append(Paragraph(f"<i>Respondido por:</i> {c['respondido_por']}", estilo_meta))
+            contenido.append(Paragraph(
+                f"<i>Respondido por:</i> {c['respondido_por']}", estilo_meta
+            ))
         contenido.append(Spacer(1, 0.3*cm))
+        contador += 1
+
     doc.build(contenido)
     buffer.seek(0)
     return buffer.getvalue()
