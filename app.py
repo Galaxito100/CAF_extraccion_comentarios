@@ -14,10 +14,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 
-
-# ─────────────────────────────────────────────
 # FUNCIONES DE EXTRACCIÓN (mismo código de antes)
-# ─────────────────────────────────────────────
 
 def extraer_celda_siguiente(tabla, label):
     for fila in tabla.rows:
