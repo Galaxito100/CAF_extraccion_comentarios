@@ -1,3 +1,4 @@
+#Librerias
 import streamlit as st
 import tempfile
 import os
@@ -14,10 +15,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 
-
-# ─────────────────────────────────────────────
 # CONFIGURACIÓN DE PÁGINA
-# ─────────────────────────────────────────────
 
 st.set_page_config(
     page_title="Extractor de Comentarios | CAF",
@@ -175,9 +173,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ─────────────────────────────────────────────
-# FUNCIONES (igual que antes)
-# ─────────────────────────────────────────────
+# FUNCIONES 
 
 def extraer_celda_siguiente(tabla, label):
     for fila in tabla.rows:
@@ -459,19 +455,15 @@ def generar_pdf_bytes(comentarios):
         topMargin=2*cm,   bottomMargin=2*cm
     )
     styles = getSampleStyleSheet()
+
     estilo_titulo = ParagraphStyle(
         'Titulo', parent=styles['Title'],
-        fontSize=16, textColor=colors.HexColor('#1B3A6B'), spaceAfter=6
-    )
-    estilo_subtitulo = ParagraphStyle(
-        'Subtitulo', parent=styles['Normal'],
-        fontSize=10, textColor=colors.HexColor('#4CAF50'),
-        spaceAfter=20, fontName='Helvetica-Bold'
+        fontSize=16, textColor=colors.HexColor('#2C3E50'), spaceAfter=20
     )
     estilo_doc = ParagraphStyle(
         'Documento', parent=styles['Heading1'],
-        fontSize=12, textColor=colors.white,
-        backColor=colors.HexColor('#1B3A6B'),
+        fontSize=13, textColor=colors.HexColor('#FFFFFF'),
+        backColor=colors.HexColor('#2C3E50'),
         spaceAfter=10, spaceBefore=20,
         leftIndent=0, borderPadding=(6, 10, 6, 10),
     )
@@ -482,33 +474,34 @@ def generar_pdf_bytes(comentarios):
     estilo_ref = ParagraphStyle(
         'Ref', parent=styles['Normal'],
         fontSize=10, textColor=colors.HexColor('#555555'),
-        backColor=colors.HexColor('#F0F7F0'),
+        backColor=colors.HexColor('#F4F6F7'),
         leftIndent=10, rightIndent=10, spaceAfter=6, leading=14
     )
     estilo_texto = ParagraphStyle(
         'Texto', parent=styles['Normal'],
-        fontSize=11, textColor=colors.HexColor('#1B3A6B'),
+        fontSize=11, textColor=colors.HexColor('#2C3E50'),
         spaceAfter=6, leading=15
     )
+
     contenido = []
-    contenido.append(Paragraph("Extractor de Comentarios", estilo_titulo))
-    contenido.append(Paragraph("DIRECCIÓN DE RIESGO SOBERANO — CAF", estilo_subtitulo))
-    contenido.append(HRFlowable(width="100%", thickness=3, color=colors.HexColor('#4CAF50')))
-    contenido.append(Spacer(1, 0.3*cm))
+    contenido.append(Paragraph("Comentarios del documento", estilo_titulo))
     contenido.append(Paragraph(f"Total de comentarios: {len(comentarios)}", styles['Normal']))
-    contenido.append(Spacer(1, 0.4*cm))
+    contenido.append(Spacer(1, 0.5*cm))
 
     documento_actual = None
-    contador = 1
+    contador         = 1
+
     for c in comentarios:
         doc_nombre = c.get('documento', 'Sin nombre')
+
         if doc_nombre != documento_actual:
             documento_actual = doc_nombre
-            contenido.append(Spacer(1, 0.3*cm))
+            contenido.append(Spacer(1, 0.4*cm))
+            contenido.append(HRFlowable(width="100%", thickness=2, color=colors.HexColor('#2C3E50')))
             contenido.append(Paragraph(f"  {doc_nombre}", estilo_doc))
-            contenido.append(HRFlowable(width="100%", thickness=2, color=colors.HexColor('#4CAF50')))
             contenido.append(Spacer(1, 0.2*cm))
-        contenido.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor('#E0E0E0')))
+
+        contenido.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
         contenido.append(Spacer(1, 0.2*cm))
         contenido.append(Paragraph(
             f"<b>Comentario #{contador}</b> — {c['autor']} · {c['fecha']} · {c['estado']}",
@@ -524,23 +517,22 @@ def generar_pdf_bytes(comentarios):
             ))
         contenido.append(Spacer(1, 0.3*cm))
         contador += 1
+
     doc.build(contenido)
     buffer.seek(0)
     return buffer.getvalue()
 
 
-# ─────────────────────────────────────────────
-# INTERFAZ
-# ─────────────────────────────────────────────
+# Interfaz del aplicativo
 
 # Header
 st.markdown("""
 <div class="caf-topbar"></div>
 <div class="caf-greenbar"></div>
 <div class="caf-header">
-    <h1>💬 Extractor de Comentarios</h1>
-    <p class="subtitulo">Procesá documentos Word y PDF para extraer y consolidar comentarios</p>
-    <p class="division">Dirección de Riesgo Soberano · CAF</p>
+    <h1>💬 Reporte de Comentarios</h1>
+    <p class="subtitulo">Procesa documentos Word y PDF para extraer y consolidar comentarios</p>
+    <p class="division">Dirección de Riesgo Soberano </p>
 </div>
 <div class="caf-accent"></div>
 """, unsafe_allow_html=True)
@@ -548,7 +540,7 @@ st.markdown("""
 # Sección subida
 st.markdown('<div class="caf-card"><h3>📁 Archivos</h3>', unsafe_allow_html=True)
 archivos_subidos = st.file_uploader(
-    "Seleccioná los archivos",
+    "Selecciona los archivos",
     type=["docx", "pdf"],
     accept_multiple_files=True,
     label_visibility="collapsed"
