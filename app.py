@@ -14,7 +14,170 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 
-# FUNCIONES DE EXTRACCIÓN
+
+# ─────────────────────────────────────────────
+# CONFIGURACIÓN DE PÁGINA
+# ─────────────────────────────────────────────
+
+st.set_page_config(
+    page_title="Extractor de Comentarios | CAF",
+    page_icon="💬",
+    layout="centered"
+)
+
+# CSS corporativo CAF
+st.markdown("""
+<style>
+    /* Fondo general */
+    .stApp {
+        background-color: #F5F7FA;
+    }
+
+    /* Ocultar header de Streamlit */
+    header[data-testid="stHeader"] {
+        background-color: #1B3A6B;
+    }
+
+    /* Barra superior CAF */
+    .caf-topbar {
+        background-color: #1B3A6B;
+        padding: 0px 0px 0px 0px;
+        margin: -60px -60px 0px -60px;
+        height: 8px;
+    }
+    .caf-greenbar {
+        background-color: #4CAF50;
+        height: 5px;
+        margin: 0px -60px 30px -60px;
+    }
+
+    /* Header principal */
+    .caf-header {
+        background: linear-gradient(135deg, #1B3A6B 0%, #2C5F8A 100%);
+        border-radius: 12px;
+        padding: 30px 40px;
+        margin-bottom: 30px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(27,58,107,0.3);
+    }
+    .caf-header h1 {
+        color: white;
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+        letter-spacing: 1px;
+    }
+    .caf-header .subtitulo {
+        color: #A8C8E8;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+    .caf-header .division {
+        color: #4CAF50;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-top: 8px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    /* Franja verde debajo del header */
+    .caf-accent {
+        height: 4px;
+        background: linear-gradient(90deg, #4CAF50, #81C784);
+        border-radius: 2px;
+        margin-bottom: 25px;
+    }
+
+    /* Tarjetas de sección */
+    .caf-card {
+        background: white;
+        border-radius: 10px;
+        padding: 25px 30px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-left: 4px solid #4CAF50;
+    }
+    .caf-card h3 {
+        color: #1B3A6B;
+        margin: 0 0 15px 0;
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Botón principal */
+    .stButton > button {
+        background: linear-gradient(135deg, #1B3A6B, #2C5F8A) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 12px 35px !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        width: 100% !important;
+        transition: all 0.3s !important;
+        box-shadow: 0 3px 10px rgba(27,58,107,0.3) !important;
+    }
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #4CAF50, #2E7D32) !important;
+        box-shadow: 0 5px 15px rgba(76,175,80,0.4) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Botones de descarga */
+    .stDownloadButton > button {
+        background: linear-gradient(135deg, #4CAF50, #2E7D32) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 10px 25px !important;
+        font-weight: 600 !important;
+        width: 100% !important;
+        box-shadow: 0 3px 10px rgba(76,175,80,0.3) !important;
+    }
+
+    /* Multiselect */
+    .stMultiSelect > div > div {
+        border-color: #4CAF50 !important;
+        border-radius: 8px !important;
+    }
+
+    /* File uploader */
+    [data-testid="stFileUploader"] {
+        border: 2px dashed #4CAF50 !important;
+        border-radius: 10px !important;
+        background: #F0F7F0 !important;
+    }
+
+    /* Success / warning / info */
+    .stSuccess {
+        background-color: #E8F5E9 !important;
+        border-left: 4px solid #4CAF50 !important;
+        border-radius: 6px !important;
+    }
+
+    /* Footer */
+    .caf-footer {
+        text-align: center;
+        color: #9E9E9E;
+        font-size: 0.8rem;
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #E0E0E0;
+    }
+    .caf-footer span {
+        color: #4CAF50;
+        font-weight: 600;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
+# ─────────────────────────────────────────────
+# FUNCIONES (igual que antes)
+# ─────────────────────────────────────────────
 
 def extraer_celda_siguiente(tabla, label):
     for fila in tabla.rows:
@@ -26,14 +189,12 @@ def extraer_celda_siguiente(tabla, label):
                         return valor
     return "NA"
 
-
 def extraer_casilla_marcada(tabla, label):
     NS = {
         'w':   'http://schemas.openxmlformats.org/wordprocessingml/2006/main',
         'w14': 'http://schemas.microsoft.com/office/word/2010/wordml',
     }
     MARCAS_UNICODE = {'☒', '☑'}
-
     for fila in tabla.rows:
         texto_fila = ' '.join(c.text for c in fila.cells).lower()
         if label.lower() not in texto_fila:
@@ -81,7 +242,6 @@ def extraer_casilla_marcada(tabla, label):
             return ', '.join(dict.fromkeys(resultados))
     return "NA"
 
-
 def extraer_metadatos(docx_path):
     doc = Document(docx_path)
     metadatos = {
@@ -120,7 +280,6 @@ def extraer_metadatos(docx_path):
                 if valor != 'NA':
                     metadatos[campo] = valor
     return metadatos
-
 
 def extraer_comentarios_word(docx_path):
     comentarios = []
@@ -219,7 +378,6 @@ def extraer_comentarios_word(docx_path):
         })
     return comentarios
 
-
 def extraer_comentarios_pdf(pdf_path):
     comentarios = []
     doc = fitz.open(pdf_path)
@@ -251,13 +409,12 @@ def extraer_comentarios_pdf(pdf_path):
     doc.close()
     return comentarios
 
-
 def generar_excel_bytes(comentarios):
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Comentarios"
     encabezado_font  = Font(bold=True, color="FFFFFF")
-    encabezado_fill  = PatternFill("solid", fgColor="2C3E50")
+    encabezado_fill  = PatternFill("solid", fgColor="1B3A6B")
     encabezado_align = Alignment(horizontal="center", vertical="center")
     columnas = [
         ("Documento", 25), ("Tipo", 10), ("Comentario", 60), ("Fecha", 15),
@@ -294,7 +451,6 @@ def generar_excel_bytes(comentarios):
     buffer.seek(0)
     return buffer.getvalue()
 
-
 def generar_pdf_bytes(comentarios):
     buffer = io.BytesIO()
     doc    = SimpleDocTemplate(
@@ -303,18 +459,21 @@ def generar_pdf_bytes(comentarios):
         topMargin=2*cm,   bottomMargin=2*cm
     )
     styles = getSampleStyleSheet()
-
     estilo_titulo = ParagraphStyle(
         'Titulo', parent=styles['Title'],
-        fontSize=16, textColor=colors.HexColor('#2C3E50'), spaceAfter=20
+        fontSize=16, textColor=colors.HexColor('#1B3A6B'), spaceAfter=6
+    )
+    estilo_subtitulo = ParagraphStyle(
+        'Subtitulo', parent=styles['Normal'],
+        fontSize=10, textColor=colors.HexColor('#4CAF50'),
+        spaceAfter=20, fontName='Helvetica-Bold'
     )
     estilo_doc = ParagraphStyle(
         'Documento', parent=styles['Heading1'],
-        fontSize=13, textColor=colors.HexColor('#FFFFFF'),
-        backColor=colors.HexColor('#2C3E50'),
+        fontSize=12, textColor=colors.white,
+        backColor=colors.HexColor('#1B3A6B'),
         spaceAfter=10, spaceBefore=20,
-        leftIndent=-10, rightIndent=-10,
-        borderPadding=(6, 10, 6, 10),
+        leftIndent=0, borderPadding=(6, 10, 6, 10),
     )
     estilo_meta = ParagraphStyle(
         'Meta', parent=styles['Normal'],
@@ -323,35 +482,33 @@ def generar_pdf_bytes(comentarios):
     estilo_ref = ParagraphStyle(
         'Ref', parent=styles['Normal'],
         fontSize=10, textColor=colors.HexColor('#555555'),
-        backColor=colors.HexColor('#F4F6F7'),
+        backColor=colors.HexColor('#F0F7F0'),
         leftIndent=10, rightIndent=10, spaceAfter=6, leading=14
     )
     estilo_texto = ParagraphStyle(
         'Texto', parent=styles['Normal'],
-        fontSize=11, textColor=colors.HexColor('#2C3E50'),
+        fontSize=11, textColor=colors.HexColor('#1B3A6B'),
         spaceAfter=6, leading=15
     )
-
     contenido = []
-    contenido.append(Paragraph("Comentarios del documento", estilo_titulo))
+    contenido.append(Paragraph("Extractor de Comentarios", estilo_titulo))
+    contenido.append(Paragraph("DIRECCIÓN DE RIESGO SOBERANO — CAF", estilo_subtitulo))
+    contenido.append(HRFlowable(width="100%", thickness=3, color=colors.HexColor('#4CAF50')))
+    contenido.append(Spacer(1, 0.3*cm))
     contenido.append(Paragraph(f"Total de comentarios: {len(comentarios)}", styles['Normal']))
-    contenido.append(Spacer(1, 0.5*cm))
+    contenido.append(Spacer(1, 0.4*cm))
 
     documento_actual = None
-    contador         = 1
-
+    contador = 1
     for c in comentarios:
         doc_nombre = c.get('documento', 'Sin nombre')
-
-        # Encabezado de documento cuando cambia
         if doc_nombre != documento_actual:
             documento_actual = doc_nombre
-            contenido.append(Spacer(1, 0.4*cm))
-            contenido.append(HRFlowable(width="100%", thickness=2, color=colors.HexColor('#2C3E50')))
-            contenido.append(Paragraph(f"📄 {doc_nombre}", estilo_doc))
+            contenido.append(Spacer(1, 0.3*cm))
+            contenido.append(Paragraph(f"  {doc_nombre}", estilo_doc))
+            contenido.append(HRFlowable(width="100%", thickness=2, color=colors.HexColor('#4CAF50')))
             contenido.append(Spacer(1, 0.2*cm))
-
-        contenido.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
+        contenido.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor('#E0E0E0')))
         contenido.append(Spacer(1, 0.2*cm))
         contenido.append(Paragraph(
             f"<b>Comentario #{contador}</b> — {c['autor']} · {c['fecha']} · {c['estado']}",
@@ -367,40 +524,58 @@ def generar_pdf_bytes(comentarios):
             ))
         contenido.append(Spacer(1, 0.3*cm))
         contador += 1
-
     doc.build(contenido)
     buffer.seek(0)
     return buffer.getvalue()
 
 
-# INTERFAZ STREAMLIT
+# ─────────────────────────────────────────────
+# INTERFAZ
+# ─────────────────────────────────────────────
 
-st.set_page_config(page_title="Extractor de Comentarios", page_icon="💬", layout="centered") #Título del aplicativo Web
+# Header
+st.markdown("""
+<div class="caf-topbar"></div>
+<div class="caf-greenbar"></div>
+<div class="caf-header">
+    <h1>💬 Extractor de Comentarios</h1>
+    <p class="subtitulo">Procesá documentos Word y PDF para extraer y consolidar comentarios</p>
+    <p class="division">Dirección de Riesgo Soberano · CAF</p>
+</div>
+<div class="caf-accent"></div>
+""", unsafe_allow_html=True)
 
-st.title("💬 Extractor de Comentarios")
-st.markdown("Sube uno o varios archivos Word o PDF y descarga sus comentarios en el formato que necesites.") #Comentario inicial de explicacion del programa
-
+# Sección subida
+st.markdown('<div class="caf-card"><h3>📁 Archivos</h3>', unsafe_allow_html=True)
 archivos_subidos = st.file_uploader(
-    "Selecciona los archivos", #Comentario superior sobre la entrada de archivos
+    "Seleccioná los archivos",
     type=["docx", "pdf"],
-    accept_multiple_files=True
+    accept_multiple_files=True,
+    label_visibility="collapsed"
 )
+st.markdown('</div>', unsafe_allow_html=True)
 
+# Sección formato
+st.markdown('<div class="caf-card"><h3>📄 Formato de salida</h3>', unsafe_allow_html=True)
 output_elegido = st.multiselect(
-    "¿Qué deseas generar?", #Comentario inferior pre selección de objetivo
+    "¿Qué deseas generar?",
     options=["Excel", "PDF"],
-    default=["Excel"]
+    default=["Excel"],
+    label_visibility="visible"
 )
+st.markdown('</div>', unsafe_allow_html=True)
 
-if st.button("⚙️ Procesar", disabled=not archivos_subidos): #Ubicacion del botón de Procesamiento
+# Botón procesar
+procesar = st.button("⚙️  Procesar documentos", disabled=not archivos_subidos)
+
+if procesar:
     todos_los_comentarios = []
-    progress = st.progress(0)
-    status   = st.empty()
+    progress = st.progress(0, text="Iniciando...")
 
     for idx, archivo in enumerate(archivos_subidos):
         nombre    = os.path.splitext(archivo.name)[0]
         extension = os.path.splitext(archivo.name)[1].lower()
-        status.text(f"Procesando {archivo.name}...")
+        progress.progress((idx) / len(archivos_subidos), text=f"Procesando {archivo.name}...")
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=extension) as tmp:
             tmp.write(archivo.read())
@@ -423,36 +598,56 @@ if st.button("⚙️ Procesar", disabled=not archivos_subidos): #Ubicacion del b
                 c['documento'] = nombre
                 c['metadatos'] = metadatos
             todos_los_comentarios.extend(comentarios)
-            st.success(f"✅ {archivo.name} — {len(comentarios)} comentarios")
+            st.success(f"✅ **{archivo.name}** — {len(comentarios)} comentarios encontrados")
 
         except Exception as e:
-            st.warning(f"⚠️ Error en {archivo.name}: {e}")
+            st.warning(f"⚠️ Error en **{archivo.name}**: {e}")
         finally:
             os.unlink(tmp_path)
 
-        progress.progress((idx + 1) / len(archivos_subidos))
+        progress.progress((idx + 1) / len(archivos_subidos), text=f"✓ {archivo.name}")
 
-    status.empty()
+    progress.progress(1.0, text="¡Completado!")
 
     if todos_los_comentarios:
-        st.markdown(f"### Total: **{len(todos_los_comentarios)} comentarios** encontrados")
+        st.markdown(f"""
+        <div style="background:linear-gradient(135deg,#1B3A6B,#2C5F8A);
+                    border-radius:10px; padding:20px; text-align:center; margin:20px 0">
+            <h2 style="color:white; margin:0">
+                {len(todos_los_comentarios)} comentarios procesados
+            </h2>
+            <p style="color:#A8C8E8; margin:5px 0 0 0">
+                de {len(archivos_subidos)} documento(s)
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
+        col1, col2 = st.columns(2)
         if "Excel" in output_elegido:
-            excel_bytes = generar_excel_bytes(todos_los_comentarios)
-            st.download_button(
-                label="📥 Descargar Excel",
-                data=excel_bytes,
-                file_name="comentarios.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-
+            with col1:
+                excel_bytes = generar_excel_bytes(todos_los_comentarios)
+                st.download_button(
+                    label="📥 Descargar Excel",
+                    data=excel_bytes,
+                    file_name="comentarios.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
         if "PDF" in output_elegido:
-            pdf_bytes = generar_pdf_bytes(todos_los_comentarios)
-            st.download_button(
-                label="📥 Descargar PDF",
-                data=pdf_bytes,
-                file_name="comentarios.pdf",
-                mime="application/pdf"
-            )
+            with col2:
+                pdf_bytes = generar_pdf_bytes(todos_los_comentarios)
+                st.download_button(
+                    label="📥 Descargar PDF",
+                    data=pdf_bytes,
+                    file_name="comentarios.pdf",
+                    mime="application/pdf"
+                )
     else:
-        st.info("No se encontraron comentarios en los archivos procesados.")
+        st.info("ℹ️ No se encontraron comentarios en los archivos procesados.")
+
+# Footer
+st.markdown("""
+<div class="caf-footer">
+    <span>CAF</span> · Banco de Desarrollo de América Latina y el Caribe<br>
+    Dirección de Riesgo Soberano
+</div>
+""", unsafe_allow_html=True)
